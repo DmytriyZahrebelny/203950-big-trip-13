@@ -63,7 +63,7 @@ points.forEach((data) => {
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  editForm.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, () => {
+  editForm.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
     replaceEditFormToPoint();
   });
 
