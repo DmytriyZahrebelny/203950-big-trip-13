@@ -44,11 +44,26 @@ points.forEach((data) => {
     tripListComponent.getElement().replaceChild(editForm.getElement(), pointsComponent.getElement());
   };
 
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      replaceEditFormToPoint();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
   pointsComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
     replacePointToEditForm();
+    document.addEventListener(`keydown`, onEscKeyDown);
   });
 
-  editForm.getElement().querySelector(`form`).addEventListener(`click`, () => {
+  editForm.getElement().querySelector(`form`).addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
+    replaceEditFormToPoint();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
+  editForm.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
     replaceEditFormToPoint();
   });
 
