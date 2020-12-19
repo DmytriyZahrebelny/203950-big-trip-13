@@ -6,7 +6,7 @@ import Sort from './view/sort';
 import TripEventsList from './view/trip-events-list';
 import CreationForm from './view/creation-form';
 import Points from './view/points';
-import {RenderPosition, render} from './utils';
+import {RenderPosition, render, replace} from './utils';
 import {generatePoint} from './mocks/mocks';
 
 const POINT_COUNT = 5;
@@ -37,11 +37,11 @@ points.forEach((data) => {
   const editForm = new CreationForm();
 
   const replaceEditFormToPoint = () => {
-    tripListComponent.getElement().replaceChild(pointsComponent.getElement(), editForm.getElement());
+    replace(pointsComponent, editForm);
   };
 
   const replacePointToEditForm = () => {
-    tripListComponent.getElement().replaceChild(editForm.getElement(), pointsComponent.getElement());
+    replace(editForm, pointsComponent);
   };
 
   const onEscKeyDown = (evt) => {
@@ -52,19 +52,19 @@ points.forEach((data) => {
     }
   };
 
-  pointsComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  pointsComponent.setOpenPointFormClickHandler(() => {
     replacePointToEditForm();
     document.addEventListener(`keydown`, onEscKeyDown);
   });
 
-  editForm.getElement().querySelector(`form`).addEventListener(`submit`, (evt) => {
-    evt.preventDefault();
+  editForm.setSubmitFormHandler(() => {
     replaceEditFormToPoint();
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  editForm.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  editForm.setClosePointFormClickHandler(() => {
     replaceEditFormToPoint();
+    document.addEventListener(`keydown`, onEscKeyDown);
   });
 
   render(tripListComponent.getElement(), pointsComponent.getElement(), RenderPosition.BEFOREEND);
