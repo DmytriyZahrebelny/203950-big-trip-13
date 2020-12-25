@@ -14,5 +14,6 @@ export const generatePoint = () => ({
   time: ``,
   isFavorite: Boolean(getRandomInteger()),
   destination: `London`,
-  price: 400
+  price: 400,
+  id: Math.random() * (10000 - 0) + 0
 });
