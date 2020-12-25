@@ -48,6 +48,7 @@ export default class Points extends AbstractView {
     this.points = points;
 
     this._clickHandler = this._clickHandler.bind(this);
+    this._favoritClickHandler = this._favoritClickHandler.bind(this);
   }
 
   getTemplate() {
@@ -57,6 +58,18 @@ export default class Points extends AbstractView {
   _clickHandler(evt) {
     evt.preventDefault();
     this._callback.click();
+  }
+
+  _favoritClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.favoriteClick();
+  }
+
+  toggleFavoritePointClickHandler(callback) {
+    this._callback.favoriteClick = callback;
+
+    this.getElement()
+      .querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favoritClickHandler);
   }
 
   setOpenPointFormClickHandler(callback) {
