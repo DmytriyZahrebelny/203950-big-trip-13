@@ -1,4 +1,4 @@
-import CreationFormView from '../view/creation-form';
+import PointFormView from '../view/point-form';
 import PointView from '../view/points';
 
 import {RenderPosition, render, replace, remove} from '../utils';
@@ -32,7 +32,7 @@ export default class Point {
     const prevEditForm = this._editForm;
 
     this._pointComponent = new PointView(point);
-    this._editForm = new CreationFormView();
+    this._editForm = new PointFormView();
 
     this._pointComponent.setOpenPointFormClickHandler(this._replacePointToEditForm);
     this._pointComponent.toggleFavoritePointClickHandler(this._toggleFavoritePoint);

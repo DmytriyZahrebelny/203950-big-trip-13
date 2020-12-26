@@ -1,6 +1,6 @@
 import AbstractView from './abstract';
 
-const createCreationForm = () => (`
+const createPointForm = () => (`
   <li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -163,7 +163,7 @@ const createCreationForm = () => (`
   </li>
 `);
 
-export default class CreationForm extends AbstractView {
+export default class PointForm extends AbstractView {
   constructor() {
     super();
 
@@ -172,7 +172,7 @@ export default class CreationForm extends AbstractView {
   }
 
   getTemplate() {
-    return createCreationForm();
+    return createPointForm();
   }
 
   _clickHandler(evt) {
