@@ -6,14 +6,15 @@ const getRandomInteger = (a = 0, b = 1) => {
 };
 
 const pointTypes = [`Taxi`, `Bus`, `Train`, `Ship`, `Transport`, `Drive`, `Flight`, `Check-in`, `Sightseeing`];
+const priceList = [400, 600, 500, 800, 700];
 
 const generateTypePoint = () => pointTypes[getRandomInteger(0, pointTypes.length - 1)];
 
-export const generatePoint = () => ({
+export const generatePoint = (i) => ({
   type: generateTypePoint(),
   time: ``,
   isFavorite: Boolean(getRandomInteger()),
   destination: `London`,
-  price: 400,
+  price: priceList[i],
   id: Math.random() * (10000 - 0) + 0
 });

@@ -47,7 +47,7 @@ export default class Points extends AbstractView {
     super();
     this.points = points;
 
-    this._clickHandler = this._clickHandler.bind(this);
+    this._openEditFormClickHandler = this._openEditFormClickHandler.bind(this);
     this._favoritClickHandler = this._favoritClickHandler.bind(this);
   }
 
@@ -55,7 +55,7 @@ export default class Points extends AbstractView {
     return createPoints(this.points);
   }
 
-  _clickHandler(evt) {
+  _openEditFormClickHandler(evt) {
     evt.preventDefault();
     this._callback.click();
   }
@@ -76,6 +76,6 @@ export default class Points extends AbstractView {
     this._callback.click = callback;
 
     this.getElement()
-      .querySelector(`.event__rollup-btn`).addEventListener(`click`, this._clickHandler);
+      .querySelector(`.event__rollup-btn`).addEventListener(`click`, this._openEditFormClickHandler);
   }
 }

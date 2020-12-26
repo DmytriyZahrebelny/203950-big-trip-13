@@ -2,7 +2,7 @@ import {generatePoint} from './mocks/mocks';
 import TripPresenter from './presenter/trip';
 
 const POINT_COUNT = 5;
-const points = new Array(POINT_COUNT).fill().map(generatePoint);
+const points = new Array(POINT_COUNT).fill().map((_, i) => generatePoint(i));
 
 const siteBodyElement = document.querySelector(`.page-body`);
 const siteHeaderElement = siteBodyElement.querySelector(`.page-header`);
