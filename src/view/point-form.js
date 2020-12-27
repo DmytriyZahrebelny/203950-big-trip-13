@@ -1,5 +1,9 @@
 import SmartView from './smart';
 import {pointEvents} from '../mocks/mocks';
+import flatpickr from "flatpickr";
+import dayjs from "dayjs";
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const pointEventsKeys = Object.keys(pointEvents);
 
@@ -145,18 +149,23 @@ export default class PointForm extends SmartView {
     super();
 
     this._data = data;
+    this._datepickerFromFrom = null;
+    this._datepickerFromTo = null;
 
     this._clickHandler = this._clickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._eventTypeHandler = this._eventTypeHandler.bind(this);
+    this._dueDateChangeHandler = this._dueDateChangeHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setDatepicker();
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
     this.setClosePointFormClickHandler(this._callback.click);
+    this._setDatepicker();
   }
 
   getTemplate() {
@@ -209,5 +218,46 @@ export default class PointForm extends SmartView {
     this.getElement()
       .querySelector(`.event__type-group`)
       .addEventListener(`change`, this._eventTypeHandler);
+  }
+
+  _setDatepicker() {
+    if (this._datepickerFrom) {
+      this._datepickerFrom.destroy();
+      this._datepickerFrom = null;
+    }
+
+    if (this._datepickerTo) {
+      this._datepickerTo.destroy();
+      this._datepickerTo = null;
+    }
+
+    const [inputTimeFrom, inputTimeTo] = this.getElement().querySelectorAll(`.event__input--time`);
+    this._datepickerFrom = flatpickr(
+        inputTimeFrom,
+        {
+          dateFormat: `j F`,
+          defaultDate: this._data.dueDate,
+          onChange: this._dueDateChangeHandler
+        }
+    );
+
+    this._datepickerTo = flatpickr(
+        inputTimeTo,
+        {
+          dateFormat: `j F`,
+          defaultDate: this._data.dueDate,
+          onChange: this._dueDateChangeHandler
+        }
+    );
+  }
+
+  _dueDateChangeHandler([userDate]) {
+    this.updateData({
+      dueDate: dayjs(userDate).hour(23).minute(59).second(59).toDate()
+    });
+  }
+
+  reset(data) {
+    this.updateData(data);
   }
 }
