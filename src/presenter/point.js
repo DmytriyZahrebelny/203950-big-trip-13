@@ -32,7 +32,7 @@ export default class Point {
     const prevEditForm = this._editForm;
 
     this._pointComponent = new PointView(point);
-    this._editForm = new PointFormView();
+    this._editForm = new PointFormView(point);
 
     this._pointComponent.setOpenPointFormClickHandler(this._replacePointToEditForm);
     this._pointComponent.toggleFavoritePointClickHandler(this._toggleFavoritePoint);
@@ -42,10 +42,6 @@ export default class Point {
     if (prevPointComponent === null || prevEditForm === null) {
       render(this._pointsListContainer, this._pointComponent, RenderPosition.BEFOREEND);
       return;
-    }
-
-    if (this._pointsListContainer.getElement().contains(prevPointComponent.getElement())) {
-      replace(this._pointComponent, prevPointComponent);
     }
 
     if (this._editForm.getElement().contains(prevEditForm.getElement())) {
