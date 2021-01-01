@@ -29,7 +29,7 @@ const createPointFormDestinationEventTemplate = (type, destination) => (`
     <label class="event__label  event__type-output" for="event-destination-1">
       ${type}
     </label>
-    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value=${destination} list="destination-list-1">
+    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" list="destination-list-1" value=${destination}>
     <datalist id="destination-list-1">
       <option value="Amsterdam"></option>
       <option value="Geneva"></option>
@@ -38,7 +38,8 @@ const createPointFormDestinationEventTemplate = (type, destination) => (`
   </div>
 `);
 
-const createPointForm = ({type, destination}) => (`
+
+const createPointForm = ({type = `Flight`, destination = ``}, isEdit) => (`
   <li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -74,8 +75,8 @@ const createPointForm = ({type, destination}) => (`
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
-        <button class="event__rollup-btn" type="button">
+        <button class="event__reset-btn" type="reset">${isEdit ? `Delete` : `Cancel`}</button>
+        <button class="event__rollup-btn" style=${!isEdit ? `display:none` : ``} type="button">
           <span class="visually-hidden">Open event</span>
         </button>
       </header>
@@ -148,7 +149,8 @@ export default class PointForm extends SmartView {
   constructor(data) {
     super();
 
-    this._data = data;
+    this._data = data || {};
+    this._isEdit = data ? true : false;
     this._datepickerFromFrom = null;
     this._datepickerFromTo = null;
 
@@ -157,19 +159,31 @@ export default class PointForm extends SmartView {
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._eventTypeHandler = this._eventTypeHandler.bind(this);
     this._dueDateChangeHandler = this._dueDateChangeHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
 
     this._setInnerHandlers();
     this._setDatepicker();
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._datepicker) {
+      this._datepicker.destroy();
+      this._datepicker = null;
+    }
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
     this.setClosePointFormClickHandler(this._callback.click);
     this._setDatepicker();
+    this.setSubmitFormHandler(this._callback.formSubmit);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   getTemplate() {
-    return createPointForm(this._data);
+    return createPointForm(this._data, this._isEdit);
   }
 
   _clickHandler(evt) {
@@ -179,7 +193,26 @@ export default class PointForm extends SmartView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit();
+
+    const formData = Object.fromEntries(new FormData(evt.target).entries());
+
+    if (!this._data.type) {
+      this._data.type = formData[`event-type`];
+    }
+
+    if (!this._data.isFavorite) {
+      this._data.isFavorite = false;
+    }
+
+    if (!this._data.destination) {
+      this._data.destination = formData[`event-destination`];
+    }
+
+    if (!this._data.price) {
+      this._data.price = formData[`event-price`];
+    }
+
+    this._callback.formSubmit(this._data);
   }
 
   setClosePointFormClickHandler(callback) {
@@ -208,6 +241,16 @@ export default class PointForm extends SmartView {
     this.updateData({
       type: pointEvents[evt.target.value]
     });
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(this._data);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
   }
 
   _setInnerHandlers() {
@@ -255,6 +298,26 @@ export default class PointForm extends SmartView {
     this.updateData({
       dueDate: dayjs(userDate).hour(23).minute(59).second(59).toDate()
     });
+  }
+
+  parseDataToPoint(data) {
+    data = Object.assign({}, data);
+
+    if (!data.type) {
+      data.type = ``;
+    }
+
+    if (!data.isFavorite) {
+      data.isFavorite = false;
+    }
+
+    if (!data.destination) {
+      data.destination = false;
+    }
+
+    if (!data.price) {
+      data.price = false;
+    }
   }
 
   reset(data) {
