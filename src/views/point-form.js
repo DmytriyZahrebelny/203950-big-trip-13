@@ -1,45 +1,79 @@
 import SmartView from './smart';
-import {pointEvents} from '../mocks/mocks';
-import flatpickr from "flatpickr";
-import dayjs from "dayjs";
+import flatpickr from 'flatpickr';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
-const pointEventsKeys = Object.keys(pointEvents);
+dayjs.extend(utc);
 
-const createPointFormTypeEventTemplate = (type) => {
-  return pointEventsKeys.map((key) => (`
-    <div class="event__type-item">
+const createPointFormTypeEventListTemplate = (offers, type) => offers.map((offer) => (`
+  <div class="event__type-item">
+    <input
+      id="event-type-${offer.type}-1"
+      class="event__type-input
+      visually-hidden"
+      type="radio"
+      name="event-type"
+      value=${offer.type}
+      ${offer.type === type ? `checked` : ``}
+    >
+    <label
+      class="event__type-label
+      event__type-label--${offer.type}"
+      for="event-type-${offer.type}-1"
+    >
+      ${offer.type.charAt(0).toUpperCase() + offer.type.slice(1)}
+    </label>
+  </div>
+`)).join(``);
+
+const createPointFormDestinationEventTemplate = (type, destination, destinationsList) => {
+  const citiesList = destinationsList.map(({name}) => name);
+
+  return (`
+    <div class="event__field-group  event__field-group--destination">
+      <label class="event__label  event__type-output" for="event-destination-1">
+        ${type}
+      </label>
       <input
-        id="event-type-${key}-1"
-        class="event__type-input
-        visually-hidden"
-        type="radio"
-        name="event-type"
-        value=${key}
-        ${pointEvents[key] === type ? `checked` : ``}
+        class="event__input
+        event__input--destination"
+        id="event-destination-1"
+        type="text"
+        name="event-destination"
+        list="destination-list-1"
+        value=${destination ? destination.name : ``}
       >
-      <label class="event__type-label  event__type-label--${key}" for="event-type-${key}-1">${pointEvents[key]}</label>
+      <datalist id="destination-list-1">
+        ${citiesList.map((city) => `<option value=${city}></option>`).join(``)}
+      </datalist>
+    </div>
+  `);
+};
+
+const createPointFormOffersListTemplate = (offers, type) => {
+  const offersList = offers.find((offer) => offer.type === type);
+
+  return offersList.offers.map(({price, title}, i) => (`
+    <div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-${i}" type="checkbox" name="event-offer-seats">
+      <label class="event__offer-label" for="event-offer-seats-${i}">
+        <span class="event__offer-title">${title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${price}</span>
+      </label>
     </div>
   `)).join(``);
 };
 
-const createPointFormDestinationEventTemplate = (type, destination) => (`
-  <div class="event__field-group  event__field-group--destination">
-    <label class="event__label  event__type-output" for="event-destination-1">
-      ${type}
-    </label>
-    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" list="destination-list-1" value=${destination}>
-    <datalist id="destination-list-1">
-      <option value="Amsterdam"></option>
-      <option value="Geneva"></option>
-      <option value="Chamonix"></option>
-    </datalist>
-  </div>
-`);
+const createPicturesListTemplate = (pictures) => {
+  return pictures.map(({description, src}) => (`
+    <img class="event__photo" src=${src} alt=${description}>
+  `)).join(``);
+};
 
-
-const createPointForm = ({type = `Flight`, destination = ``}, isEdit) => (`
+const createPointForm = ({type = `flight`, destination, basePrice}, offers, destinationsList, isEdit) => (`
   <li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -53,11 +87,11 @@ const createPointForm = ({type = `Flight`, destination = ``}, isEdit) => (`
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Event type</legend>
-              ${createPointFormTypeEventTemplate(type)}
+              ${createPointFormTypeEventListTemplate(offers, type)}
             </fieldset>
           </div>
         </div>
-        ${createPointFormDestinationEventTemplate(type, destination)}
+        ${createPointFormDestinationEventTemplate(type, destination, destinationsList)}
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
           <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="18/03/19 12:25">
@@ -71,7 +105,7 @@ const createPointForm = ({type = `Flight`, destination = ``}, isEdit) => (`
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="160">
+          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice || ``}>
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -85,60 +119,20 @@ const createPointForm = ({type = `Flight`, destination = ``}, isEdit) => (`
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
           <div class="event__available-offers">
-            <div class="event__offer-selector">
-              <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-              <label class="event__offer-label" for="event-offer-luggage-1">
-                <span class="event__offer-title">Add luggage</span>
-                &plus;&euro;&nbsp;
-                <span class="event__offer-price">50</span>
-              </label>
-            </div>
-
-            <div class="event__offer-selector">
-              <input class="event__offer-checkbox  visually-hidden" id="event-offer-comfort-1" type="checkbox" name="event-offer-comfort" checked>
-              <label class="event__offer-label" for="event-offer-comfort-1">
-                <span class="event__offer-title">Switch to comfort</span>
-                &plus;&euro;&nbsp;
-                <span class="event__offer-price">80</span>
-              </label>
-            </div>
-
-            <div class="event__offer-selector">
-              <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal">
-              <label class="event__offer-label" for="event-offer-meal-1">
-                <span class="event__offer-title">Add meal</span>
-                &plus;&euro;&nbsp;
-                <span class="event__offer-price">15</span>
-              </label>
-            </div>
-
-            <div class="event__offer-selector">
-              <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-1" type="checkbox" name="event-offer-seats">
-              <label class="event__offer-label" for="event-offer-seats-1">
-                <span class="event__offer-title">Choose seats</span>
-                &plus;&euro;&nbsp;
-                <span class="event__offer-price">5</span>
-              </label>
-            </div>
-
-            <div class="event__offer-selector">
-              <input class="event__offer-checkbox  visually-hidden" id="event-offer-train-1" type="checkbox" name="event-offer-train">
-              <label class="event__offer-label" for="event-offer-train-1">
-                <span class="event__offer-title">Travel by train</span>
-                &plus;&euro;&nbsp;
-                <span class="event__offer-price">40</span>
-              </label>
-            </div>
+            ${createPointFormOffersListTemplate(offers, type)}
           </div>
         </section>
 
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
           <p class="event__destination-description">
-            ${destination === `London`
-    ? `Chamonix-Mont-Blanc (usually shortened to Chamonix) is a resort area near the junction of France, Switzerland and Italy. At the base of Mont Blanc, the highest summit in the Alps, it's renowned for its skiing.`
-    : `change`}
+            ${destination ? destination.description : ``}
           </p>
+          <div class="event__photos-container">
+            <div class="event__photos-tape">
+              ${destination ? createPicturesListTemplate(destination.pictures) : ``}
+            </div>
+          </div>
         </section>
       </section>
     </form>
@@ -146,19 +140,22 @@ const createPointForm = ({type = `Flight`, destination = ``}, isEdit) => (`
 `);
 
 export default class PointForm extends SmartView {
-  constructor(data) {
+  constructor(data, offers = [], destinations = []) {
     super();
 
     this._data = data || {};
     this._isEdit = data ? true : false;
     this._datepickerFromFrom = null;
     this._datepickerFromTo = null;
+    this._offers = offers;
+    this._destinations = destinations;
 
     this._clickHandler = this._clickHandler.bind(this);
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._eventTypeHandler = this._eventTypeHandler.bind(this);
-    this._dueDateChangeHandler = this._dueDateChangeHandler.bind(this);
+    this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
+    this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
     this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
 
     this._setInnerHandlers();
@@ -183,7 +180,7 @@ export default class PointForm extends SmartView {
   }
 
   getTemplate() {
-    return createPointForm(this._data, this._isEdit);
+    return createPointForm(this._data, this._offers, this._destinations, this._isEdit);
   }
 
   _clickHandler(evt) {
@@ -193,24 +190,6 @@ export default class PointForm extends SmartView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-
-    const formData = Object.fromEntries(new FormData(evt.target).entries());
-
-    if (!this._data.type) {
-      this._data.type = formData[`event-type`];
-    }
-
-    if (!this._data.isFavorite) {
-      this._data.isFavorite = false;
-    }
-
-    if (!this._data.destination) {
-      this._data.destination = formData[`event-destination`];
-    }
-
-    if (!this._data.price) {
-      this._data.price = formData[`event-price`];
-    }
 
     this._callback.formSubmit(this._data);
   }
@@ -231,15 +210,16 @@ export default class PointForm extends SmartView {
 
   _destinationInputHandler(evt) {
     evt.preventDefault();
+    const newDestination = this._destinations.find(({name}) => name === evt.target.value);
     this.updateData({
-      destination: evt.target.value
+      destination: newDestination || {name: evt.target.value, description: ``, pictures: []}
     });
   }
 
   _eventTypeHandler(evt) {
     evt.preventDefault();
     this.updateData({
-      type: pointEvents[evt.target.value]
+      type: evt.target.value
     });
   }
 
@@ -278,25 +258,34 @@ export default class PointForm extends SmartView {
     this._datepickerFrom = flatpickr(
         inputTimeFrom,
         {
-          dateFormat: `j F`,
-          defaultDate: this._data.dueDate,
-          onChange: this._dueDateChangeHandler
+          dateFormat: `d/m/y H:i`,
+          defaultDate: this._isEdit ? this._data.dateFrom : `today`,
+          onChange: this._dateFromChangeHandler
         }
     );
 
     this._datepickerTo = flatpickr(
         inputTimeTo,
         {
-          dateFormat: `j F`,
-          defaultDate: this._data.dueDate,
-          onChange: this._dueDateChangeHandler
+          dateFormat: `d/m/y H:i`,
+          defaultDate: this._isEdit ? this._data.dataTo : `today`,
+          onChange: this._dateToChangeHandler
         }
     );
   }
 
-  _dueDateChangeHandler([userDate]) {
+  _dateFromChangeHandler([userDate]) {
+    // if (dayjs(userDate).isAfter(this._)) {
+
+    // }
     this.updateData({
-      dueDate: dayjs(userDate).hour(23).minute(59).second(59).toDate()
+      dateFrom: dayjs(userDate).utc().format()
+    });
+  }
+
+  _dateToChangeHandler([userDate]) {
+    this.updateData({
+      dataTo: dayjs(userDate).utc().format()
     });
   }
 
