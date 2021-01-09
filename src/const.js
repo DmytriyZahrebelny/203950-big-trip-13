@@ -12,11 +12,18 @@ export const UserAction = {
 export const UpdateType = {
   PATCH: `PATCH`,
   MINOR: `MINOR`,
-  MAJOR: `MAJOR`
+  MAJOR: `MAJOR`,
+  INIT: `INIT`
 };
 
 export const FilterType = {
   EVERYTHING: `everything`,
   PAST: `past`,
   FUTURE: `future`,
+};
+
+export const TimeMS = {
+  day: 86400000,
+  hour: 3600000,
+  minute: 60000,
 };

@@ -1,14 +1,16 @@
-import {generatePoint} from './mocks/mocks';
 import TripPresenter from './presenters/trip';
 import FilterPresenter from './presenters/filter';
 import PointsModel from './models/points';
 import FilterModel from './models/filter';
+import Api from "./api/api.js";
+import {UpdateType} from './const';
 
-const POINT_COUNT = 5;
-const points = new Array(POINT_COUNT).fill().map((_, i) => generatePoint(i));
+const AUTHORIZATION = `Basic eo0w590ik29889a`;
+const END_POINT = `https://13.ecmascript.pages.academy/big-trip`;
+
+const api = new Api(END_POINT, AUTHORIZATION);
 
 const pointsModel = new PointsModel();
-pointsModel.setPoints(points);
 const filterModel = new FilterModel();
 
 const siteBodyElement = document.querySelector(`.page-body`);
@@ -24,7 +26,8 @@ const tripPresenter = new TripPresenter(
     headerMenuElement,
     tripEventsElement,
     pointsModel,
-    filterModel
+    filterModel,
+    api
 );
 const filterPresenter = new FilterPresenter(headerMenuElement, filterModel, pointsModel);
 
@@ -36,3 +39,26 @@ document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (e
 filterPresenter.init();
 tripPresenter.init();
 
+api.getPoints()
+  .then((data) => {
+    pointsModel.setPoints(UpdateType.INIT, data);
+  })
+  .catch(() => {
+    pointsModel.setPoints(UpdateType.INIT, []);
+  });
+
+api.getOffers()
+  .then((data) => {
+    pointsModel.setOffers(UpdateType.INIT, data);
+  })
+  .catch(() => {
+    pointsModel.setPoints(UpdateType.INIT, []);
+  });
+
+api.getDestinations()
+  .then((data) => {
+    pointsModel.setDestinations(UpdateType.INIT, data);
+  })
+  .catch(() => {
+    pointsModel.setPoints(UpdateType.INIT, []);
+  });
