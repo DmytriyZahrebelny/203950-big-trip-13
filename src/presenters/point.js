@@ -10,6 +10,12 @@ const Mode = {
   CREATING: `CREATING`
 };
 
+export const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`,
+  ABORTING: `ABORTING`
+};
+
 export default class Point {
   constructor(pointsListContainer, changeData, changeMode, pointsModel) {
     this._pointsListContainer = pointsListContainer;
@@ -18,7 +24,7 @@ export default class Point {
     this._pointsModel = pointsModel;
 
     this._pointComponent = null;
-    this._pointForm = null;
+    this._pointFormComponent = null;
 
     this._mode = Mode.DEFAULT;
 
@@ -33,26 +39,26 @@ export default class Point {
   init(point) {
     this._point = point;
     const prevPointComponent = this._pointComponent;
-    const prevPointForm = this._pointForm;
+    const prevPointForm = this._pointFormComponent;
     const offers = this._pointsModel.getOffers();
     const destinations = this._pointsModel.getDestinations();
 
     this._pointComponent = new PointView(point);
-    this._pointForm = new PointFormView(point, offers, destinations);
+    this._pointFormComponent = new PointFormView(point, offers, destinations);
 
     this._pointComponent.setOpenPointFormClickHandler(this._replacePointToEditForm);
     this._pointComponent.toggleFavoritePointClickHandler(this._toggleFavoritePoint);
-    this._pointForm.setSubmitFormHandler(this._submitForm);
-    this._pointForm.setClosePointFormClickHandler(this._closeForm);
-    this._pointForm.setDeleteClickHandler(this._handleDeleteClick);
+    this._pointFormComponent.setSubmitFormHandler(this._submitForm);
+    this._pointFormComponent.setClosePointFormClickHandler(this._closeForm);
+    this._pointFormComponent.setDeleteClickHandler(this._handleDeleteClick);
 
     if (prevPointComponent === null || prevPointForm === null) {
       render(this._pointsListContainer, this._pointComponent, RenderPosition.BEFOREEND);
       return;
     }
 
-    if (this._pointForm.getElement().contains(prevPointForm.getElement())) {
-      replace(this._pointForm, prevPointForm);
+    if (this._pointFormComponent.getElement().contains(prevPointForm.getElement())) {
+      replace(this._pointFormComponent, prevPointForm);
     }
 
     if (this._mode === Mode.DEFAULT) {
@@ -60,7 +66,8 @@ export default class Point {
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._pointForm, prevPointForm);
+      replace(this._pointFormComponent, prevPointForm);
+      this._mode = Mode.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -69,7 +76,24 @@ export default class Point {
 
   destroy() {
     remove(this._pointComponent);
-    remove(this._pointForm);
+    remove(this._pointFormComponent);
+  }
+
+  setViewState(state) {
+    switch (state) {
+      case State.SAVING:
+        this._pointFormComponent.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+        break;
+      case State.DELETING:
+        this._pointFormComponent.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+        break;
+    }
   }
 
   resetView() {
@@ -81,19 +105,19 @@ export default class Point {
   _escKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
-      this._pointForm.reset(this._point);
+      this._pointFormComponent.reset(this._point);
       this._replaceEditFormToPoint();
     }
   }
 
   _replaceEditFormToPoint() {
-    replace(this._pointComponent, this._pointForm);
+    replace(this._pointComponent, this._pointFormComponent);
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.DEFAULT;
   }
 
   _replacePointToEditForm() {
-    replace(this._pointForm, this._pointComponent);
+    replace(this._pointFormComponent, this._pointComponent);
     document.addEventListener(`keydown`, this._escKeyDownHandler);
     this._changeMode();
     this._mode = Mode.EDITING;
