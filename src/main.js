@@ -2,8 +2,11 @@ import TripPresenter from './presenters/trip';
 import FilterPresenter from './presenters/filter';
 import PointsModel from './models/points';
 import FilterModel from './models/filter';
-import Api from "./api/api.js";
-import {UpdateType} from './const';
+import MenuView from './views/menu';
+import StatisticsView from './views/statistics';
+import Api from './api/api';
+import {UpdateType, MenuItem, FilterType} from './const';
+import {RenderPosition, render, remove} from './utils';
 
 const AUTHORIZATION = `Basic eo0w590ik29889a`;
 const END_POINT = `https://13.ecmascript.pages.academy/big-trip`;
@@ -13,13 +16,18 @@ const api = new Api(END_POINT, AUTHORIZATION);
 const pointsModel = new PointsModel();
 const filterModel = new FilterModel();
 
+const menuComponent = new MenuView();
+
 const siteBodyElement = document.querySelector(`.page-body`);
 const siteHeaderElement = siteBodyElement.querySelector(`.page-header`);
 const siteMainElement = siteBodyElement.querySelector(`.page-main`);
+const siteBodyContainer = siteMainElement.querySelector(`.page-body__container`);
 
 const headerTripElement = siteHeaderElement.querySelector(`.trip-main`);
 const headerMenuElement = headerTripElement.querySelector(`.trip-controls`);
 const tripEventsElement = siteMainElement.querySelector(`.trip-events`);
+
+render(headerMenuElement, menuComponent, RenderPosition.AFTERBEGIN);
 
 const tripPresenter = new TripPresenter(
     headerTripElement,
@@ -31,9 +39,40 @@ const tripPresenter = new TripPresenter(
 );
 const filterPresenter = new FilterPresenter(headerMenuElement, filterModel, pointsModel);
 
+let statisticsComponent = null;
+const handlePointNewFormClose = () => {
+  console.log(true);
+};
+
+const handleSiteMenuClick = (menuItem) => {
+  switch (menuItem) {
+    case MenuItem.ADD_NEW_POINT:
+      remove(statisticsComponent);
+      tripPresenter.destroy();
+      filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+      tripPresenter.init();
+      tripPresenter.createPoint(handlePointNewFormClose);
+      break;
+    case MenuItem.POINTS:
+      tripPresenter.init();
+      remove(statisticsComponent);
+      break;
+    case MenuItem.STATISTICS:
+      tripPresenter.destroy();
+      statisticsComponent = new StatisticsView(
+          pointsModel.getPoints(),
+          pointsModel.getOffers()
+      );
+      render(siteBodyContainer, statisticsComponent, RenderPosition.BEFOREEND);
+      break;
+  }
+};
+
+menuComponent.setMenuClickHandler(handleSiteMenuClick);
+
 document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
   evt.preventDefault();
-  tripPresenter.createTask();
+  tripPresenter.createPoint();
 });
 
 filterPresenter.init();
