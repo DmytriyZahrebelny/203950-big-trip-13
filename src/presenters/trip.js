@@ -1,6 +1,5 @@
 import TripInfoView from '../views/trip-info';
 import TravelCostView from '../views/travel-cost';
-import MenuView from '../views/menu';
 import TripEventsListView from '../views/trip-events-list';
 import SortView from '../views/sort';
 import LoadingView from '../views/loading';
@@ -33,7 +32,6 @@ export default class Trip {
 
     this._tripInfoComponent = new TripInfoView();
     this._travelCostComponent = new TravelCostView();
-    this._menuComponent = new MenuView();
     this._tripEventsComponent = new TripEventsListView();
     this._sortComponent = new SortView();
     this._loadingComponent = new LoadingView();
@@ -59,10 +57,21 @@ export default class Trip {
     this._renderTrip();
   }
 
-  createTask() {
+  destroy() {
+    this._clearPointsList({resetSortType: true});
+
+    remove(this._sortComponent);
+    remove(this._tripEventsComponent);
+    // remove(this._renderPoints);
+
+    this._pointsModel.removeObserver(this._handleModelEvent);
+    this._filterModel.removeObserver(this._handleModelEvent);
+  }
+
+  createPoint(callback) {
     this._currentSortType = SortType.DEFAULT;
     this._filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this._pointNewPresenter.init();
+    this._pointNewPresenter.init(callback);
   }
 
   _getPoints() {
@@ -81,7 +90,6 @@ export default class Trip {
   _renderTrip() {
     this._renderTripInfo();
     this._renderTravelCost();
-    this._renderMenu();
     this._rendersSort();
     this._renderTripEventsList();
     this._renderPoints();
@@ -93,10 +101,6 @@ export default class Trip {
 
   _renderTravelCost() {
     render(this._tripInfoComponent, this._travelCostComponent, RenderPosition.BEFOREEND);
-  }
-
-  _renderMenu() {
-    render(this._headerMenuContainer, this._menuComponent, RenderPosition.AFTERBEGIN);
   }
 
   _renderTripEventsList() {
@@ -198,7 +202,7 @@ export default class Trip {
         this._renderPoints();
         break;
       case UpdateType.MAJOR:
-        this._clearPointsList();
+        this._clearPointsList({resetSortType: true});
         this._renderPoints();
         break;
       case UpdateType.INIT:
@@ -217,7 +221,7 @@ export default class Trip {
       .forEach((presenter) => presenter.resetView());
   }
 
-  _clearPointsList() {
+  _clearPointsList({resetSortType = false} = {}) {
     this._pointNewPresenter.destroy();
 
     Object
@@ -225,5 +229,13 @@ export default class Trip {
       .forEach((presenter) => presenter.destroy());
 
     this._pointPresenter = {};
+
+    remove(this._sortComponent);
+    remove(this._tripEventsComponent);
+    remove(this._loadingComponent);
+
+    if (resetSortType) {
+      this._currentSortType = SortType.DEFAULT;
+    }
   }
 }
