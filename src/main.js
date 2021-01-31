@@ -1,9 +1,9 @@
-import TripPresenter from './presenters/trip';
-import FilterPresenter from './presenters/filter';
-import PointsModel from './models/points';
-import FilterModel from './models/filter';
-import MenuView from './views/menu';
-import StatisticsView from './views/statistics';
+import TripPresenter from './presenters/trip.presenter';
+import FilterPresenter from './presenters/filter.presenter';
+import PointsModel from './models/points.model';
+import FilterModel from './models/filter.model';
+import MenuView from './views/menu.view';
+import StatisticsView from './views/statistics.view';
 import Api from './api/api';
 import {UpdateType, MenuItem, FilterType} from './const';
 import {RenderPosition, render, remove} from './utils';
@@ -72,7 +72,7 @@ menuComponent.setMenuClickHandler(handleSiteMenuClick);
 
 document.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, (evt) => {
   evt.preventDefault();
-  tripPresenter.createPoint();
+  tripPresenter.createPoint(handlePointNewFormClose);
 });
 
 filterPresenter.init();
@@ -91,7 +91,7 @@ api.getOffers()
     pointsModel.setOffers(UpdateType.INIT, data);
   })
   .catch(() => {
-    pointsModel.setPoints(UpdateType.INIT, []);
+    pointsModel.setOffers(UpdateType.INIT, []);
   });
 
 api.getDestinations()
@@ -99,5 +99,5 @@ api.getDestinations()
     pointsModel.setDestinations(UpdateType.INIT, data);
   })
   .catch(() => {
-    pointsModel.setPoints(UpdateType.INIT, []);
+    pointsModel.setDestinations(UpdateType.INIT, []);
   });
