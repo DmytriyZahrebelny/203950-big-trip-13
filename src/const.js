@@ -1,6 +1,7 @@
 export const SortType = {
   DEFAULT: `default`,
   PRICE: `price`,
+  TIME: `time`
 };
 
 export const UserAction = {
@@ -20,12 +21,6 @@ export const FilterType = {
   EVERYTHING: `everything`,
   PAST: `past`,
   FUTURE: `future`,
-};
-
-export const TimeMS = {
-  day: 86400000,
-  hour: 3600000,
-  minute: 60000,
 };
 
 export const MenuItem = {
